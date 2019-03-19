@@ -1,0 +1,97 @@
+# eco
+
+options:
+	ecoSign: $ # Default: $
+	
+	ecoStartingMoney: 1000 # How much money player's get when they first join. Set to `0` if you do not want any starting balance.
+
+	Prefix: &3&l[ECO]&6
+	
+on first join:
+	set {balance.%player's uuid%} to {@ecoStartingMoney}
+
+on join:
+	if {balance.%player's uuid%} is not set:
+		set {balance.%player's uuid%} to {@ecoStartingMoney}
+
+command /pay [<player>] [<integer>]:
+	aliases: p
+	trigger:
+		if player has permission "eco.pay":
+			if arg-1 is set:
+				if arg-2 is set:
+					if {balance.%player's uuid%} is greater than or equal to arg-2:
+						add arg-2 to {balance.%arg-1's uuid%}
+						remove arg-2 from {balance.%player's uuid%}
+						send "{@Prefix} You have sent %arg-1% to %arg-2%." to executor
+						send "{@Prefix} You have recieved %arg-2% from %arg-1%." to arg-1
+					else:
+						send "{@Prefix} You do not have enough money."
+				else:
+					send "{@Prefix} You must enter an amount to send."
+			else:
+				send "{@Prefix} You must enter a player to send money to."
+		else:
+			send "{@Prefix} You are lacking the permission ""eco.pay""."
+
+command /bal [<player>]:
+	aliases: balance
+	trigger:
+		if player has permission "eco.bal":
+			if arg-1 is not set:
+				send "{@Prefix} Your balance: %{balance.%player's uuid%}%"
+			else if arg-1 is set:
+				if player has permission "eco.bal.other":
+					send "{@Prefix} %arg-1%'s balance: %{balance.%arg-1's uuid%}%"
+				else:
+					send "{@Prefix} You are lacking the permission ""eco.bal.other""."
+		else:
+			send "{@Prefix} You are lacking the permission ""eco.bal""."
+			
+			
+command /eco [<text>] [<player>] [<integer>]:
+	aliases: economy
+	trigger:
+		if player has permission "eco.admin":
+			if arg-1 is "take":
+				if arg-2 is set:
+					if arg-3 is set:
+						remove arg-3 from {balance.%arg-2's uuid%}
+						send "{@Prefix} Removed %arg-3% from %arg-2%'s balance."
+					else:
+						send "{@Prefix} Please enter an amount to remove."
+				else:
+					send "{@Prefix} Please enter a player."
+			else if arg-1 is "reset":
+				if arg-2 is set:
+					set {balance.%arg-2's uuid%} to 0
+					send "{@Prefix} Reset %arg-2%'s balance."
+				else:
+					send "{@Prefix} Please enter a player."
+			else if arg-1 is "add":
+				if arg-2 is set:
+					if arg-3 is set:
+						add arg-3 to {balance.%arg-2's uuid%}
+						send "{@Prefix} Added %arg-3% to %arg-2%'s balance."
+					else:
+						send "{@Prefix} Please enter an amount to remove."
+				else:
+					send "{@Prefix} Please enter a player."
+			else:
+				send ""
+				send "&7> &3Economy: By AdamMcGrogan"
+				send "&7> &3Version: v1.0.1"
+				send ""
+				send "&7> &3[] = optional"
+				send "&7> &3<> = required"
+				send ""
+				send "&7> &3/bal [player] &7&oCheck your/another player's balance. (eco.bal & eco.bal.other)"
+				send "&7> &3/pay <player> <amount> &7&oSend another player money. (eco.pay)"
+				send "&7> &3/eco take <player> <amount> &7&oRemove money from a player. (eco.admin)"
+				send "&7> &3/eco add <player> <amount> &7&oAdd money to a player. (eco.admin)"
+				send "&7> &3/eco reset <player> &7&oReset a player's balance. (eco.admin)"
+				send ""
+				send "&7> &3For more, visit https://www.spigotmc.org/wiki/adam"
+				send ""
+		else:
+			send "{@Prefix} You are lacking the permission ""eco.admin""."
